@@ -4,7 +4,7 @@ import { Modal, Button, Form, Input, Select, Checkbox } from "antd";
 import axios from "axios";
 
 const { Option } = Select;
-const baseUrl="https://printing.sutradhar.tech/dev/backend/api/v1"
+const baseUrl = "https://printing.sutradhar.tech/dev/backend/api/v1";
 
 const ModulePage = () => {
   const [modules, setModules] = useState(() => {
@@ -28,7 +28,7 @@ const ModulePage = () => {
     border: "",
     pageNo: "",
   });
-const [pagesizeOption,setPageSizeOption]=useState([])
+  const [pagesizeOption, setPageSizeOption] = useState([]);
   const previewRef = useRef();
 
   const PAGE_SIZES = {
@@ -37,7 +37,7 @@ const [pagesizeOption,setPageSizeOption]=useState([])
     A6: { width: 105, height: 148.5 },
     A7: { width: 74.25, height: 105 },
   };
-  
+
   const GRID_SIZE = 10;
 
   useEffect(() => {
@@ -46,18 +46,18 @@ const [pagesizeOption,setPageSizeOption]=useState([])
   useEffect(() => {
     resizeModulesOnPageSizeChange();
   }, [pageSize, orientation]);
-  
+
   const resizeModulesOnPageSizeChange = () => {
     const { width, height } = PAGE_SIZES[pageSize];
     const pageWidth = orientation === "Landscape" ? height : width;
     const pageHeight = orientation === "Landscape" ? width : height;
-  
+
     const updatedModules = modules.map((module) => {
       let newWidth = module.width;
       let newHeight = module.height;
       let newX = module.x;
       let newY = module.y;
-  
+
       // Adjust width and x position
       if (module.x + module.width > pageWidth * 3.77953) {
         newWidth = pageWidth * 3.77953 - module.x;
@@ -66,7 +66,7 @@ const [pagesizeOption,setPageSizeOption]=useState([])
       if (module.y + module.height > pageHeight * 3.77953) {
         newHeight = pageHeight * 3.77953 - module.y;
       }
-  
+
       return {
         ...module,
         width: newWidth,
@@ -75,10 +75,9 @@ const [pagesizeOption,setPageSizeOption]=useState([])
         y: newY,
       };
     });
-  
+
     setModules(updatedModules);
   };
-  
 
   const handleModuleClick = (id) => {
     setActiveModule(id === activeModule ? null : id);
@@ -115,30 +114,30 @@ const [pagesizeOption,setPageSizeOption]=useState([])
       if (module.id === id) {
         let newX = d.x;
         let newY = d.y;
-  
+
         if (snapToGrid) {
           const gridSize = GRID_SIZE;
           newX = Math.round(newX / gridSize) * gridSize;
           newY = Math.round(newY / gridSize) * gridSize;
         }
-  
+
         // Calculate the maximum allowed positions
-        const maxX = (PAGE_SIZES[pageSize].width ) * 3.77953 - module.width;
-        const maxY = (PAGE_SIZES[pageSize].height) * 3.77953 - module.height;
-  
+        const maxX = PAGE_SIZES[pageSize].width * 3.77953 - module.width;
+        const maxY = PAGE_SIZES[pageSize].height * 3.77953 - module.height;
+
         // Ensure module stays within page boundaries
         newX = Math.max(0, Math.min(newX, maxX));
         newY = Math.max(0, Math.min(newY, maxY));
-  
+
         return { ...module, x: newX, y: newY };
       }
       return module;
     });
-  
+
     setModules(updatedModules);
     setActiveModule(id); // Keep the module active after dragging
   };
-  
+
   const handleResizeStop = (id, direction, ref, delta, position) => {
     const updatedModules = modules.map((module) => {
       if (module.id === id) {
@@ -146,7 +145,7 @@ const [pagesizeOption,setPageSizeOption]=useState([])
         let newHeight = parseInt(ref.style.height, 10);
         let newX = position.x;
         let newY = position.y;
-  
+
         if (snapToGrid) {
           const gridSize = GRID_SIZE;
           newWidth = Math.round(newWidth / gridSize) * gridSize;
@@ -154,32 +153,34 @@ const [pagesizeOption,setPageSizeOption]=useState([])
           newX = Math.round(newX / gridSize) * gridSize;
           newY = Math.round(newY / gridSize) * gridSize;
         }
-  
+
         // Calculate the maximum allowed positions and sizes
         const maxX = (PAGE_SIZES[pageSize].width / 2) * 3.77953 - newWidth;
         const maxY = (PAGE_SIZES[pageSize].height / 2) * 3.77953 - newHeight;
-  
+
         // Clamp newX and newY to stay within bounds
         newX = Math.max(0, Math.min(newX, maxX));
         newY = Math.max(0, Math.min(newY, maxY));
-  
+
         // Clamp newWidth and newHeight to stay within bounds
         newWidth = Math.min(newWidth, PAGE_SIZES[pageSize].width * 3.77953);
         newHeight = Math.min(newHeight, PAGE_SIZES[pageSize].height * 3.77953);
-  console.log("TYUHB",newWidth,modules,PAGE_SIZES,pageSize);
-        return { ...module, width: newWidth, height: newHeight, x: newX, y: newY };
+        console.log("TYUHB", newWidth, modules, PAGE_SIZES, pageSize);
+        return {
+          ...module,
+          width: newWidth,
+          height: newHeight,
+          x: newX,
+          y: newY,
+        };
       }
       return module;
     });
-  
+
     setModules(updatedModules);
     setActiveModule(id); // Keep the module active after resizing
   };
-  
-  
-  
 
-    
   const toggleAlignmentGuide = () => {
     setShowAlignmentGuide(!showAlignmentGuide);
   };
@@ -194,10 +195,10 @@ const [pagesizeOption,setPageSizeOption]=useState([])
 
   const calculateAlignmentHighlight = (module) => {
     const alignmentThreshold = 10; // Adjust as needed for snapping sensitivity
-  
+
     let border = "1px solid #ddd";
     let outline = showAlignmentGuide ? "1px dashed #ccc" : "none";
-  
+
     // Check alignment with other modules
     modules.forEach((otherModule) => {
       if (otherModule.id !== module.id) {
@@ -205,23 +206,22 @@ const [pagesizeOption,setPageSizeOption]=useState([])
         if (Math.abs(otherModule.y - module.y) < alignmentThreshold) {
           module.y = otherModule.y;
         }
-  
+
         // Snap to vertical alignment
         if (Math.abs(otherModule.x - module.x) < alignmentThreshold) {
           module.x = otherModule.x;
         }
       }
     });
-  
+
     // Calculate border and outline styles based on alignment
-    border = (module.x === 0 || module.y === 0) ? "2px solid red" : border;
-  
+    border = module.x === 0 || module.y === 0 ? "2px solid red" : border;
+
     return {
       border,
       outline,
     };
   };
-  
 
   const handleDeleteModule = (id) => {
     if (window.confirm("Are you sure you want to delete this module?")) {
@@ -299,35 +299,42 @@ const [pagesizeOption,setPageSizeOption]=useState([])
       module.id === infoFormData.moduleId
         ? {
             ...module,
-            info: infoFormData.info,
-            type: infoFormData.type,
-            isMultiple: infoFormData.isMultiple,
-            border: infoFormData.border,
-            pageNo: infoFormData.pageNo,
+            ...infoFormData,
+            // Update or add specific fields from infoFormData as needed
           }
         : module
     );
+  
+    console.log("Updated Modules:", updatedModules);
     setModules(updatedModules);
     setIsModalOpen(false);
   };
+  
 
   const handleSaveAsFormat = async () => {
     const payload = {};
 
-    let resp = await axios.post("hi", payload).then((r) => {}).catch((err) => {
-      console.log(err);
-    });
+    let resp = await axios
+      .post("hi", payload)
+      .then((r) => {})
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
-  useEffect(()=>{
-const FetchPagesize=async()=>{
-  await axios.post(`${baseUrl}/filterpagetype/`).then((r)=>{
-    console.log(r);
-    setPageSizeOption(r.data.Message)
-  }).catch((err)=>console.log(err))
-}
-FetchPagesize()
-  },[])
+  useEffect(() => {
+    const FetchPagesize = async () => {
+      await axios
+        .post(`${baseUrl}/filterpagetype/`)
+        .then((r) => {
+          console.log(r);
+          setPageSizeOption(r.data.Message);
+        })
+        .catch((err) => console.log(err));
+    };
+    FetchPagesize();
+  }, []);
+ 
   return (
     <div
       style={{
@@ -350,12 +357,9 @@ FetchPagesize()
           onChange={(value) => setPageSize(value)}
           style={{ width: 120 }}
         >
-          {pagesizeOption?.map((item)=>{
-            return <Option value={item.descn}>{item?.descn}</Option>
-          }
-          )}
-          
-          
+          {pagesizeOption?.map((item) => {
+            return <Option value={item.descn}>{item?.descn}</Option>;
+          })}
         </Select>
         <Select
           value={pageNumber}
@@ -378,9 +382,7 @@ FetchPagesize()
           Add Box
         </Button>
         <Button onClick={handleFormatPage}>Format Page</Button>
-        <Button onClick={toggleAlignmentGuide}>
-          Toggle Alignment Guide
-        </Button>
+        <Button onClick={toggleAlignmentGuide}>Toggle Alignment Guide</Button>
         <Button onClick={toggleSnapToGrid}>
           {snapToGrid ? "Disable Snap to Grid" : "Enable Snap to Grid"}
         </Button>
@@ -420,8 +422,7 @@ FetchPagesize()
               onDoubleClick={() => handleModuleDoubleClick(module.id)}
               style={{
                 border: "1px solid #ddd",
-                background:
-                  activeModule === module.id ? "#e0f7fa" : "#f0f0f0",
+                background: activeModule === module.id ? "#e0f7fa" : "#f0f0f0",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -477,7 +478,7 @@ FetchPagesize()
               <div
                 style={{
                   position: "absolute",
-                  left: canvasWidth * 3.77953 / 2,
+                  left: (canvasWidth * 3.77953) / 2,
                   top: 0,
                   width: 1,
                   height: "100%",
@@ -487,7 +488,7 @@ FetchPagesize()
               <div
                 style={{
                   position: "absolute",
-                  top: canvasHeight * 3.77953 / 2,
+                  top: (canvasHeight * 3.77953) / 2,
                   left: 0,
                   width: "100%",
                   height: 1,
@@ -509,37 +510,39 @@ FetchPagesize()
   );
 };
 
-
-
 const InfoModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
+
   useEffect(() => {
     if (isOpen) {
-      // Initialize form data with default or existing values
+      // Set form data with the provided initial formData
       setFormData({
-        mastercode: '',
-        trntype: '1', // Example: Default value for dropdown
-        textwrap: '1', // Example: Default value for dropdown
-        fontsize: '',
-        texttype: '1', // Example: Default value for dropdown
-        alignment: 'center', // Example: Default value for dropdown
-        box: '1', // Example: Default value for dropdown
-        bordercolor: '1', // Example: Default value for dropdown
-        borderwidth: '1', // Example: Default value for dropdown
-        textcolor: '1', // Example: Default value for dropdown
-        hasChildren: 0,
-        xcoord: '',
-        ycoord: '',
-        pagetype: 1,
-        height: '',
-        width: '',
-        apikey: '1', // Example: Default value for input
+        ...formData,
+        mastercode: formData.mastercode || "",
+        trntype: formData.trntype || "1", // Default value for dropdown
+        textwrap: formData.textwrap || "1", // Default value for dropdown
+        fontsize: formData.fontsize || "",
+        texttype: formData.texttype || "1", // Default value for dropdown
+        alignment: formData.alignment || "center", // Default value for dropdown
+        box: formData.box || "1", // Default value for dropdown
+        bordercolor: formData.bordercolor || "1", // Default value for dropdown
+        borderwidth: formData.borderwidth || "1", // Default value for dropdown
+        textcolor: formData.textcolor || "1", // Default value for dropdown
+        hasChildren: formData.hasChildren || 0,
+        xcoord: formData.xcoord || "",
+        ycoord: formData.ycoord || "",
+        pagetype: formData.pagetype || 1,
+        height: formData.height || "",
+        width: formData.width || "",
+        apikey: formData.apikey || "1", // Default value for input
         // Add more fields as needed
       });
     }
   }, [isOpen, setFormData]);
 
   const handleSubmit = (e) => {
+   
     e.preventDefault();
+    console.log("NODAL",formData)
     onSave();
   };
 
@@ -556,7 +559,9 @@ const InfoModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
         <Form.Item label="Master Code">
           <Input
             value={formData.mastercode}
-            onChange={(e) => setFormData({ ...formData, mastercode: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, mastercode: e.target.value })
+            }
           />
         </Form.Item>
         <Form.Item label="Transaction Type">
@@ -608,7 +613,12 @@ const InfoModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
         <Form.Item label="Has Children">
           <Checkbox
             checked={formData.hasChildren === 1}
-            onChange={(e) => setFormData({ ...formData, hasChildren: e.target.checked ? 1 : 0 })}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                hasChildren: e.target.checked ? 1 : 0,
+              })
+            }
           >
             Has Children
           </Checkbox>
@@ -616,7 +626,9 @@ const InfoModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
         <Form.Item label="API Key">
           <Input
             value={formData.apikey}
-            onChange={(e) => setFormData({ ...formData, apikey: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, apikey: e.target.value })
+            }
           />
         </Form.Item>
         {/* Add more Form.Item components for other fields */}
@@ -624,6 +636,5 @@ const InfoModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
     </Modal>
   );
 };
-
 
 export default ModulePage;
