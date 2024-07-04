@@ -123,8 +123,8 @@ const [pagesizeOption,setPageSizeOption]=useState([])
         }
   
         // Calculate the maximum allowed positions
-        const maxX = (PAGE_SIZES[pageSize].width / 2) * 3.77953 - module.width;
-        const maxY = (PAGE_SIZES[pageSize].height / 2) * 3.77953 - module.height;
+        const maxX = (PAGE_SIZES[pageSize].width ) * 3.77953 - module.width;
+        const maxY = (PAGE_SIZES[pageSize].height) * 3.77953 - module.height;
   
         // Ensure module stays within page boundaries
         newX = Math.max(0, Math.min(newX, maxX));
@@ -509,7 +509,35 @@ FetchPagesize()
   );
 };
 
+
+
 const InfoModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
+  useEffect(() => {
+    if (isOpen) {
+      // Initialize form data with default or existing values
+      setFormData({
+        mastercode: '',
+        trntype: '1', // Example: Default value for dropdown
+        textwrap: '1', // Example: Default value for dropdown
+        fontsize: '',
+        texttype: '1', // Example: Default value for dropdown
+        alignment: 'center', // Example: Default value for dropdown
+        box: '1', // Example: Default value for dropdown
+        bordercolor: '1', // Example: Default value for dropdown
+        borderwidth: '1', // Example: Default value for dropdown
+        textcolor: '1', // Example: Default value for dropdown
+        hasChildren: 0,
+        xcoord: '',
+        ycoord: '',
+        pagetype: 1,
+        height: '',
+        width: '',
+        apikey: '1', // Example: Default value for input
+        // Add more fields as needed
+      });
+    }
+  }, [isOpen, setFormData]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave();
@@ -521,59 +549,81 @@ const InfoModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
       visible={isOpen}
       onOk={handleSubmit}
       onCancel={onClose}
+      okText="Save"
+      cancelText="Cancel"
     >
-      <Form layout="vertical">
-        <Form.Item label="Additional Info">
+      <Form layout="vertical" onSubmit={handleSubmit}>
+        <Form.Item label="Master Code">
           <Input
-            value={formData.info}
-            onChange={(e) =>
-              setFormData({ ...formData, info: e.target.value })
-            }
-            required
+            value={formData.mastercode}
+            onChange={(e) => setFormData({ ...formData, mastercode: e.target.value })}
           />
         </Form.Item>
-        <Form.Item label="Type">
+        <Form.Item label="Transaction Type">
           <Select
-            value={formData.type}
-            onChange={(value) => setFormData({ ...formData, type: value })}
+            value={formData.trntype}
+            onChange={(value) => setFormData({ ...formData, trntype: value })}
           >
-            <Option value="type1">Type 1</Option>
-            <Option value="type2">Type 2</Option>
+            <Option value="1">Type 1</Option>
+            <Option value="2">Type 2</Option>
           </Select>
         </Form.Item>
-        <Form.Item>
-          <Checkbox
-            checked={formData.isMultiple}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                isMultiple: e.target.checked,
-              })
-            }
+        <Form.Item label="Text Wrap">
+          <Select
+            value={formData.textwrap}
+            onChange={(value) => setFormData({ ...formData, textwrap: value })}
           >
-            Is Multiple
+            <Option value="1">Wrap 1</Option>
+            <Option value="2">Wrap 2</Option>
+          </Select>
+        </Form.Item>
+        <Form.Item label="Text Type">
+          <Select
+            value={formData.texttype}
+            onChange={(value) => setFormData({ ...formData, texttype: value })}
+          >
+            <Option value="1">Type 1</Option>
+            <Option value="2">Type 2</Option>
+          </Select>
+        </Form.Item>
+        <Form.Item label="Alignment">
+          <Select
+            value={formData.alignment}
+            onChange={(value) => setFormData({ ...formData, alignment: value })}
+          >
+            <Option value="left">Left</Option>
+            <Option value="center">Center</Option>
+            <Option value="right">Right</Option>
+          </Select>
+        </Form.Item>
+        <Form.Item label="Box">
+          <Select
+            value={formData.box}
+            onChange={(value) => setFormData({ ...formData, box: value })}
+          >
+            <Option value="1">Box 1</Option>
+            <Option value="2">Box 2</Option>
+          </Select>
+        </Form.Item>
+        <Form.Item label="Has Children">
+          <Checkbox
+            checked={formData.hasChildren === 1}
+            onChange={(e) => setFormData({ ...formData, hasChildren: e.target.checked ? 1 : 0 })}
+          >
+            Has Children
           </Checkbox>
         </Form.Item>
-        <Form.Item label="Border">
+        <Form.Item label="API Key">
           <Input
-            value={formData.border}
-            onChange={(e) =>
-              setFormData({ ...formData, border: e.target.value })
-            }
+            value={formData.apikey}
+            onChange={(e) => setFormData({ ...formData, apikey: e.target.value })}
           />
         </Form.Item>
-        <Form.Item label="Page Number">
-          <Input
-            type="number"
-            value={formData.pageNo}
-            onChange={(e) =>
-              setFormData({ ...formData, pageNo: e.target.value })
-            }
-          />
-        </Form.Item>
+        {/* Add more Form.Item components for other fields */}
       </Form>
     </Modal>
   );
 };
+
 
 export default ModulePage;
