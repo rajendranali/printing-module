@@ -92,7 +92,7 @@ const ModulePage = () => {
       height: 150,
     };
     setModules([...modules, newModule]);
-    setNextId(nextId + 1);
+    setNextId((nextId)=>nextId + 1);
     setActiveModule(newModule.id);
   };
 
@@ -139,6 +139,7 @@ const ModulePage = () => {
   };
 
   const handleResizeStop = (id, direction, ref, delta, position) => {
+    console.log("Direction",direction);
     const updatedModules = modules.map((module) => {
       if (module.id === id) {
         let newWidth = parseInt(ref.style.width, 10);
