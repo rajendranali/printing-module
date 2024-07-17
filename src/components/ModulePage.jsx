@@ -4,7 +4,8 @@ import { Modal, Button, Form, Input, Select, Checkbox } from "antd";
 import axios from "axios";
 
 const { Option } = Select;
-const baseUrl = "https://printing.sutradhar.tech/dev/backend/api/v1";
+// const baseUrl = "https://printing.sutradhar.tech/dev/backend/api/v1";
+const baseUrl = "http://localhost:3000/api/v1";
 
 const ModulePage = () => {
   const [modules, setModules] = useState(() => {
@@ -30,18 +31,41 @@ const ModulePage = () => {
   });
   const [pagesizeOption, setPageSizeOption] = useState([]);
   const previewRef = useRef();
+  const [mastercode, setMasterCode] = useState("");
+  const [trntype, setTrnType] = useState([]);
 
-  const PAGE_SIZES = {
-    A4: { width: 211.5, height: 297 },
-    A5: { width: 148.5, height: 210 },
-    A6: { width: 105, height: 148.5 },
-    A7: { width: 74.25, height: 105 },
-  };
+const PAGE_SIZES = {
+  A4: { 
+    width: 210, 
+    height: 297,
+    width_inches: 210 * 0.0393701,
+    height_inches: 297 * 0.0393701,
+  },
+  A5: { 
+    width: 148.5, 
+    height: 210,
+    width_inches: 148.5 * 0.0393701,
+    height_inches: 210 * 0.0393701,
+  },
+  A6: { 
+    width: 105, 
+    height: 148.5,
+    width_inches: 105 * 0.0393701,
+    height_inches: 148.5 * 0.0393701,
+  },
+  A7: { 
+    width: 74.25, 
+    height: 105,
+    width_inches: 74.25 * 0.0393701,
+    height_inches: 105 * 0.0393701,
+  },
+};
+
 
   const GRID_SIZE = 10;
 
   useEffect(() => {
-    sessionStorage.setItem("modules", JSON.stringify(modules));
+    //sessionStorage.setItem("modules", JSON.stringify(modules));
   }, [modules]);
   useEffect(() => {
     resizeModulesOnPageSizeChange();
@@ -92,7 +116,7 @@ const ModulePage = () => {
       height: 150,
     };
     setModules([...modules, newModule]);
-    setNextId((nextId)=>nextId + 1);
+    setNextId((nextId) => nextId + 1);
     setActiveModule(newModule.id);
   };
 
@@ -110,6 +134,7 @@ const ModulePage = () => {
     setActiveModule(null);
   };
   const handleDragStop = (id, d) => {
+    console.log("Dragging", id, d);
     const updatedModules = modules.map((module) => {
       if (module.id === id) {
         let newX = d.x;
@@ -139,7 +164,7 @@ const ModulePage = () => {
   };
 
   const handleResizeStop = (id, direction, ref, delta, position) => {
-    console.log("Direction",direction);
+    console.log("Direction", direction, delta, position);
     const updatedModules = modules.map((module) => {
       if (module.id === id) {
         let newWidth = parseInt(ref.style.width, 10);
@@ -285,12 +310,14 @@ const ModulePage = () => {
   const handleModuleDoubleClick = (id) => {
     const module = modules.find((m) => m.id === id);
     setInfoFormData({
+      ...module,
       moduleId: id,
       info: module.info || "",
       type: module.type || "",
       isMultiple: module.isMultiple || false,
       border: module.border || "",
       pageNo: module.pageNo || "",
+      mastercode: mastercode,
     });
     setIsModalOpen(true);
   };
@@ -305,22 +332,53 @@ const ModulePage = () => {
           }
         : module
     );
-  
+
     console.log("Updated Modules:", updatedModules);
     setModules(updatedModules);
     setIsModalOpen(false);
   };
-  
 
   const handleSaveAsFormat = async () => {
-    const payload = {};
+    const payload = modules?.map((it) => {
+      return {
+        ...it,
+        xcoord: it.x,
+        ycoord: it.y,
+      };
+    });
+    const payload1 = {
+      tenant: "test",
+      appshortname: "apptest",
+      code: mastercode,
+      apiurl: "test",
+      formatname: "testformat",
+      pagetype: Number(pageNumber),
+      orientation: orientation,
+      pageheight: PAGE_SIZES[pageSize].height,
+      pagewidth: PAGE_SIZES[pageSize].width,
+      margin: "1",
+      printformattype: 1,
+      mastercode: 1,
+    };
+    console.log("Data changes", modules);
+    try {
+      console.log(payload1);
+      let resp = await axios.post(`${baseUrl}/addprintformat/`, payload1);
+      // Remove a specific item by key
+      sessionStorage.removeItem("modules");
 
-    let resp = await axios
-      .post("hi", payload)
-      .then((r) => {})
-      .catch((err) => {
-        console.log(err);
-      });
+      console.log("Format response:", resp.data);
+    } catch (err) {
+      console.error("Error adding print format:", err);
+    }
+
+    try {
+      console.log(payload);
+      let resps2 = await axios.post(`${baseUrl}/addprintfooter/`, payload);
+      console.log("Footer response:", resps2.data);
+    } catch (err) {
+      console.error("Error adding print footer:", err);
+    }
   };
 
   useEffect(() => {
@@ -334,8 +392,18 @@ const ModulePage = () => {
         .catch((err) => console.log(err));
     };
     FetchPagesize();
+    TrnType();
   }, []);
- 
+
+  const TrnType = async () => {
+    let res = await axios
+      .post(`${baseUrl}/filtertrntype`)
+      .then((r) => {
+        setTrnType(() => r.data.Message);
+      })
+      .catch((err) => console.log(err));
+  };
+  console.log("Data checking ", modules);
   return (
     <div
       style={{
@@ -353,23 +421,39 @@ const ModulePage = () => {
           alignItems: "center",
         }}
       >
+        <div
+          style={{
+            display: "flex",
+            gap: "10px",
+            marginBottom: "10px",
+            alignItems: "center",
+          }}
+        >
+          <label>Master code</label>
+          <Input
+            value={mastercode}
+            onChange={(e) => setMasterCode(e.target.value)}
+          />
+        </div>
         <Select
           value={pageSize}
           onChange={(value) => setPageSize(value)}
           style={{ width: 120 }}
         >
-          {pagesizeOption?.map((item) => {
-            return <Option value={item.descn}>{item?.descn}</Option>;
-          })}
+          {pagesizeOption?.map((item) => (
+            <Option key={item.descn} value={item.descn}>
+              {item.descn}
+            </Option>
+          ))}
         </Select>
         <Select
           value={pageNumber}
           onChange={(value) => setPageNumber(value)}
           style={{ width: 120 }}
         >
-          <Option value="page-1">Page 1</Option>
-          <Option value="page-2">Page 2</Option>
-          <Option value="page-3">Page 3</Option>
+          <Option value="1">Page 1</Option>
+          <Option value="2">Page 2</Option>
+          <Option value="3">Page 3</Option>
         </Select>
         <Select
           value={orientation}
@@ -397,7 +481,6 @@ const ModulePage = () => {
       </div>
 
       <div
-        ref={previewRef}
         style={{
           width: canvasWidth * 3.77953,
           height: canvasHeight * 3.77953,
@@ -409,7 +492,7 @@ const ModulePage = () => {
           alignItems: "center",
         }}
       >
-        <div style={{ position: "relative", width: "100%", height: "100%" }}>
+             <div style={{ position: "relative", width: "100%", height: "100%" }}>
           {showGrid && renderGrid()}
           {modules.map((module, index) => (
             <Rnd
@@ -506,14 +589,22 @@ const ModulePage = () => {
         onSave={handleSaveInfo}
         formData={infoFormData}
         setFormData={setInfoFormData}
+        trntype={trntype}
       />
     </div>
   );
 };
 
-const InfoModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
-
+const InfoModal = ({
+  isOpen,
+  onClose,
+  onSave,
+  formData,
+  setFormData,
+  trntype,
+}) => {
   useEffect(() => {
+    console.log("Modal", formData);
     if (isOpen) {
       // Set form data with the provided initial formData
       setFormData({
@@ -529,21 +620,22 @@ const InfoModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
         borderwidth: formData.borderwidth || "1", // Default value for dropdown
         textcolor: formData.textcolor || "1", // Default value for dropdown
         hasChildren: formData.hasChildren || 0,
-        xcoord: formData.xcoord || "",
-        ycoord: formData.ycoord || "",
+        xcoord: formData.x || "",
+        ycoord: formData.y || "",
         pagetype: formData.pagetype || 1,
         height: formData.height || "",
         width: formData.width || "",
         apikey: formData.apikey || "1", // Default value for input
         // Add more fields as needed
+        title: "",
+        caption: "",
       });
     }
   }, [isOpen, setFormData]);
 
   const handleSubmit = (e) => {
-   
     e.preventDefault();
-    console.log("NODAL",formData)
+    console.log("NODAL", formData);
     onSave();
   };
 
@@ -557,14 +649,14 @@ const InfoModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
       cancelText="Cancel"
     >
       <Form layout="vertical" onSubmit={handleSubmit}>
-        <Form.Item label="Master Code">
+        {/* <Form.Item label="Master Code">
           <Input
             value={formData.mastercode}
             onChange={(e) =>
               setFormData({ ...formData, mastercode: e.target.value })
             }
           />
-        </Form.Item>
+        </Form.Item> */}
         <Form.Item label="Transaction Type">
           <Select
             value={formData.trntype}
@@ -579,8 +671,8 @@ const InfoModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
             value={formData.textwrap}
             onChange={(value) => setFormData({ ...formData, textwrap: value })}
           >
-            <Option value="1">Wrap 1</Option>
-            <Option value="2">Wrap 2</Option>
+            <Option value="1">Yes</Option>
+            <Option value="0">No</Option>
           </Select>
         </Form.Item>
         <Form.Item label="Text Type">
@@ -588,8 +680,10 @@ const InfoModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
             value={formData.texttype}
             onChange={(value) => setFormData({ ...formData, texttype: value })}
           >
-            <Option value="1">Type 1</Option>
-            <Option value="2">Type 2</Option>
+            {/* <Option>Select Fieldtype</Option> */}
+            {trntype.map((r) => (
+              <Option value={r.recno}>{r.descn}</Option>
+            ))}
           </Select>
         </Form.Item>
         <Form.Item label="Alignment">
@@ -601,6 +695,14 @@ const InfoModal = ({ isOpen, onClose, onSave, formData, setFormData }) => {
             <Option value="center">Center</Option>
             <Option value="right">Right</Option>
           </Select>
+        </Form.Item>
+        <Form.Item label="Font Size">
+          <Input
+            value={formData.fontsize}
+            onChange={(e) =>
+              setFormData({ ...formData, fontsize: e.target.value })
+            }
+          />
         </Form.Item>
         <Form.Item label="Box">
           <Select
