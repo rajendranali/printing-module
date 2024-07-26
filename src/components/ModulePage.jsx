@@ -34,33 +34,32 @@ const ModulePage = () => {
   const [mastercode, setMasterCode] = useState("");
   const [trntype, setTrnType] = useState([]);
 
-const PAGE_SIZES = {
-  A4: { 
-    width: 210, 
-    height: 297,
-    width_inches: 210 * 0.0393701,
-    height_inches: 297 * 0.0393701,
-  },
-  A5: { 
-    width: 148.5, 
-    height: 210,
-    width_inches: 148.5 * 0.0393701,
-    height_inches: 210 * 0.0393701,
-  },
-  A6: { 
-    width: 105, 
-    height: 148.5,
-    width_inches: 105 * 0.0393701,
-    height_inches: 148.5 * 0.0393701,
-  },
-  A7: { 
-    width: 74.25, 
-    height: 105,
-    width_inches: 74.25 * 0.0393701,
-    height_inches: 105 * 0.0393701,
-  },
-};
-
+  const PAGE_SIZES = {
+    A4: {
+      width: 211,
+      height: 297,
+      width_inches: 210 * 0.0393701,
+      height_inches: 297 * 0.0393701,
+    },
+    A5: {
+      width: 148.5,
+      height: 210,
+      width_inches: 148.5 * 0.0393701,
+      height_inches: 210 * 0.0393701,
+    },
+    A6: {
+      width: 105,
+      height: 148.5,
+      width_inches: 105 * 0.0393701,
+      height_inches: 148.5 * 0.0393701,
+    },
+    A7: {
+      width: 74.25,
+      height: 105,
+      width_inches: 74.25 * 0.0393701,
+      height_inches: 105 * 0.0393701,
+    },
+  };
 
   const GRID_SIZE = 10;
 
@@ -344,6 +343,7 @@ const PAGE_SIZES = {
         ...it,
         xcoord: it.x,
         ycoord: it.y,
+        mastercode: mastercode,
       };
     });
     const payload1 = {
@@ -492,7 +492,7 @@ const PAGE_SIZES = {
           alignItems: "center",
         }}
       >
-             <div style={{ position: "relative", width: "100%", height: "100%" }}>
+        <div style={{ position: "relative", width: "100%", height: "100%" }}>
           {showGrid && renderGrid()}
           {modules.map((module, index) => (
             <Rnd
@@ -528,7 +528,7 @@ const PAGE_SIZES = {
               onClick={() => handleModuleClick(module.id)}
             >
               <div style={{ fontSize: "20px", position: "relative" }}>
-                Module {module.id}
+                Module {module.apikey}
                 <span
                   style={{
                     fontSize: "12px",
