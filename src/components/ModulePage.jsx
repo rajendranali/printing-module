@@ -10,7 +10,20 @@ const baseUrl = "http://localhost:3000/api/v1";
 const ModulePage = () => {
   const [modules, setModules] = useState(() => {
     const savedModules = JSON.parse(sessionStorage.getItem("modules"));
-    return savedModules || [{ id: 1, x: 10, y: 10, width: 200, height: 150 }];
+
+    return (
+      savedModules || [
+        {
+          id: 1,
+          x: 10,
+          y: 10,
+          width: 200,
+          height: 150,
+          children: [],
+          parentId: null,
+        },
+      ]
+    );
   });
   const [activeModule, setActiveModule] = useState(null);
   const [nextId, setNextId] = useState(modules.length + 1);
@@ -134,43 +147,71 @@ const ModulePage = () => {
   };
   const handleDragStop = (id, d) => {
     console.log("Dragging", id, d);
+  
     const updatedModules = modules.map((module) => {
       if (module.id === id) {
         let newX = d.x;
         let newY = d.y;
-
+  
         if (snapToGrid) {
           const gridSize = GRID_SIZE;
           newX = Math.round(newX / gridSize) * gridSize;
           newY = Math.round(newY / gridSize) * gridSize;
         }
-
-        // Calculate the maximum allowed positions
+  
         const maxX = PAGE_SIZES[pageSize].width * 3.77953 - module.width;
         const maxY = PAGE_SIZES[pageSize].height * 3.77953 - module.height;
-
-        // Ensure module stays within page boundaries
+  
         newX = Math.max(0, Math.min(newX, maxX));
         newY = Math.max(0, Math.min(newY, maxY));
-
-        return { ...module, x: newX, y: newY };
+  
+        // Create a copy of the module with updated position
+        let updatedModule = { ...module, x: newX, y: newY };
+  
+        // Find and update previous parent, if any
+        const previousParent = modules?.find(m => m?.children?.some(child => child.id === id));
+        if (previousParent) {
+          previousParent.children = previousParent?.children?.filter(child => child.id !== id);
+        }
+  
+        // Find the new parent, if any
+        const newParent = modules.find(m =>
+          m.id !== id &&
+          newX >= m.x &&
+          newY >= m.y &&
+          newX + module.width <= m.x + m.width &&
+          newY + module.height <= m.y + m.height
+        );
+  
+        if (newParent) {
+          updatedModule.parentId = newParent.id;
+          // Add the updated module to the new parent's children array
+          newParent.children = [...(newParent.children || []), updatedModule];
+        } else {
+          updatedModule.parentId = null;
+        }
+  
+        return updatedModule;
       }
       return module;
     });
-
+  
+    // Update the state after modifications
     setModules(updatedModules);
     setActiveModule(id); // Keep the module active after dragging
   };
-
+  
+  
   const handleResizeStop = (id, direction, ref, delta, position) => {
     console.log("Direction", direction, delta, position);
+  
     const updatedModules = modules.map((module) => {
       if (module.id === id) {
         let newWidth = parseInt(ref.style.width, 10);
         let newHeight = parseInt(ref.style.height, 10);
         let newX = position.x;
         let newY = position.y;
-
+  
         if (snapToGrid) {
           const gridSize = GRID_SIZE;
           newWidth = Math.round(newWidth / gridSize) * gridSize;
@@ -178,33 +219,59 @@ const ModulePage = () => {
           newX = Math.round(newX / gridSize) * gridSize;
           newY = Math.round(newY / gridSize) * gridSize;
         }
-
-        // Calculate the maximum allowed positions and sizes
-        const maxX = (PAGE_SIZES[pageSize].width / 2) * 3.77953 - newWidth;
-        const maxY = (PAGE_SIZES[pageSize].height / 2) * 3.77953 - newHeight;
-
-        // Clamp newX and newY to stay within bounds
+  
+        const maxX = PAGE_SIZES[pageSize].width * 3.77953 - newWidth;
+        const maxY = PAGE_SIZES[pageSize].height * 3.77953 - newHeight;
+  
         newX = Math.max(0, Math.min(newX, maxX));
         newY = Math.max(0, Math.min(newY, maxY));
-
-        // Clamp newWidth and newHeight to stay within bounds
+  
         newWidth = Math.min(newWidth, PAGE_SIZES[pageSize].width * 3.77953);
         newHeight = Math.min(newHeight, PAGE_SIZES[pageSize].height * 3.77953);
-        console.log("TYUHB", newWidth, modules, PAGE_SIZES, pageSize);
-        return {
+  
+        // Create a copy of the module with updated dimensions and position
+        let updatedModule = {
           ...module,
           width: newWidth,
           height: newHeight,
           x: newX,
           y: newY,
         };
+  
+        // Find and update previous parent, if any
+        const previousParent = modules?.find(m => m?.children?.some(child => child.id === id));
+        if (previousParent) {
+          previousParent.children = previousParent?.children.filter(child => child.id !== id);
+        }
+  
+        // Find the new parent, if any
+        const newParent = modules.find(m =>
+          m.id !== id &&
+          newX >= m.x &&
+          newY >= m.y &&
+          newX + newWidth <= m.x + m.width &&
+          newY + newHeight <= m.y + m.height
+        );
+  
+        if (newParent) {
+          updatedModule.parentId = newParent.id;
+          // Add the updated module to the new parent's children array
+          newParent.children = [...(newParent.children || []), updatedModule];
+        } else {
+          updatedModule.parentId = null;
+        }
+  
+        return updatedModule;
       }
       return module;
     });
-
+  
+    // Update the state after modifications
     setModules(updatedModules);
     setActiveModule(id); // Keep the module active after resizing
   };
+  
+  
 
   const toggleAlignmentGuide = () => {
     setShowAlignmentGuide(!showAlignmentGuide);
@@ -410,7 +477,6 @@ const ModulePage = () => {
         padding: "20px",
         display: "flex",
         flexDirection: "column",
-      
       }}
     >
       <div
@@ -488,7 +554,6 @@ const ModulePage = () => {
           border: "1px solid #000",
           marginTop: "20px",
           display: "flex",
-       
         }}
       >
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
@@ -648,7 +713,6 @@ const InfoModal = ({
       cancelText="Cancel"
     >
       <Form layout="vertical" onSubmit={handleSubmit}>
-     
         <Form.Item label="Transaction Type">
           <Select
             value={formData.trntype}
