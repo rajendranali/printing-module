@@ -1,0 +1,39 @@
+
+  .form-wrapper {
+    max-width: 600px;
+    margin: 10px;
+    padding: 20px;
+    height: 850px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+  }
+
+  .form-item {
+    margin-bottom: 16px;
+  }
+
+  .form-item-label {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .input-field, .select-field {
+    border-radius: 4px;
+    border-color: #d9d9d9;
+  }
+
+  .select-field .ant-select-selector {
+    padding: 4px 11px;
+  }
+
+  .checkbox-wrapper {
+    font-size: 14px;
+  }
+
+  .action-buttons {
+    text-align: right;
+  }
+
+  .action-buttons .ant-btn {
+    margin-left: 8px;
+  }

@@ -410,7 +410,7 @@ const ModulePage = () => {
         padding: "20px",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
+      
       }}
     >
       <div
@@ -488,8 +488,7 @@ const ModulePage = () => {
           border: "1px solid #000",
           marginTop: "20px",
           display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
+       
         }}
       >
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
@@ -649,14 +648,7 @@ const InfoModal = ({
       cancelText="Cancel"
     >
       <Form layout="vertical" onSubmit={handleSubmit}>
-        {/* <Form.Item label="Master Code">
-          <Input
-            value={formData.mastercode}
-            onChange={(e) =>
-              setFormData({ ...formData, mastercode: e.target.value })
-            }
-          />
-        </Form.Item> */}
+     
         <Form.Item label="Transaction Type">
           <Select
             value={formData.trntype}
