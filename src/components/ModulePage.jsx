@@ -389,20 +389,34 @@ const ModulePage = () => {
   };
 
   const handleSaveInfo = () => {
-    const updatedModules = modules.map((module) =>
-      module.id === infoFormData.moduleId
-        ? {
-            ...module,
-            ...infoFormData,
-            // Update or add specific fields from infoFormData as needed
+    const updatedModules = modules.map((module) => {
+      // If this is the module being updated directly, apply changes
+      if (module.id === infoFormData.moduleId) {
+        return { ...module, ...infoFormData };
+      }
+  
+      // If this is a potential parent of the module being updated
+      if (module.children && module.children.length > 0) {
+        const updatedChildren = module.children.map((child) => {
+          // Update the child if it matches the module being updated
+          if (child.id === infoFormData.moduleId) {
+            return { ...child, ...infoFormData };
           }
-        : module
-    );
-
-    console.log("Updated Modules:", updatedModules);
+          return child;
+        });
+  
+        return { ...module, children: updatedChildren };
+      }
+  
+      // Return other modules unchanged
+      return module;
+    });
+  
+  
     setModules(updatedModules);
     setIsModalOpen(false);
   };
+  
 
   const handleSaveAsFormat = async () => {
     const payload = modules?.map((it) => {
