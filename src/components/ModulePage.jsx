@@ -169,18 +169,24 @@ const ModulePage = () => {
         let updatedModule = { ...module, x: newX, y: newY };
   
         // Find and update previous parent, if any
-        const previousParent = modules?.find(m => m?.children?.some(child => child.id === id));
+        const previousParent = modules?.find((m) =>
+          m?.children?.some((child) => child.id === id)
+        );
         if (previousParent) {
-          previousParent.children = previousParent?.children?.filter(child => child.id !== id);
+          previousParent.children = previousParent?.children?.filter(
+            (child) => child.id !== id
+          );
         }
   
         // Find the new parent, if any
-        const newParent = modules.find(m =>
-          m.id !== id &&
-          newX >= m.x &&
-          newY >= m.y &&
-          newX + module.width <= m.x + m.width &&
-          newY + module.height <= m.y + m.height
+        const newParent = modules.find(
+          (m) =>
+            m.hasChildren && // Only consider modules that can contain children
+            m.id !== id &&
+            newX >= m.x &&
+            newY >= m.y &&
+            newX + module.width <= m.x + m.width &&
+            newY + module.height <= m.y + m.height
         );
   
         if (newParent) {
@@ -200,7 +206,6 @@ const ModulePage = () => {
     setModules(updatedModules);
     setActiveModule(id); // Keep the module active after dragging
   };
-  
   
   const handleResizeStop = (id, direction, ref, delta, position) => {
     console.log("Direction", direction, delta, position);
@@ -239,18 +244,24 @@ const ModulePage = () => {
         };
   
         // Find and update previous parent, if any
-        const previousParent = modules?.find(m => m?.children?.some(child => child.id === id));
+        const previousParent = modules?.find((m) =>
+          m?.children?.some((child) => child.id === id)
+        );
         if (previousParent) {
-          previousParent.children = previousParent?.children.filter(child => child.id !== id);
+          previousParent.children = previousParent?.children.filter(
+            (child) => child.id !== id
+          );
         }
   
         // Find the new parent, if any
-        const newParent = modules.find(m =>
-          m.id !== id &&
-          newX >= m.x &&
-          newY >= m.y &&
-          newX + newWidth <= m.x + m.width &&
-          newY + newHeight <= m.y + m.height
+        const newParent = modules.find(
+          (m) =>
+            m.hasChildren && // Only consider modules that can contain children
+            m.id !== id &&
+            newX >= m.x &&
+            newY >= m.y &&
+            newX + newWidth <= m.x + m.width &&
+            newY + newHeight <= m.y + m.height
         );
   
         if (newParent) {
@@ -270,7 +281,6 @@ const ModulePage = () => {
     setModules(updatedModules);
     setActiveModule(id); // Keep the module active after resizing
   };
-  
   
 
   const toggleAlignmentGuide = () => {
@@ -394,7 +404,7 @@ const ModulePage = () => {
       if (module.id === infoFormData.moduleId) {
         return { ...module, ...infoFormData };
       }
-  
+
       // If this is a potential parent of the module being updated
       if (module.children && module.children.length > 0) {
         const updatedChildren = module.children.map((child) => {
@@ -404,19 +414,17 @@ const ModulePage = () => {
           }
           return child;
         });
-  
+
         return { ...module, children: updatedChildren };
       }
-  
+
       // Return other modules unchanged
       return module;
     });
-  
-  
+
     setModules(updatedModules);
     setIsModalOpen(false);
   };
-  
 
   const handleSaveAsFormat = async () => {
     const payload = modules?.map((it) => {
@@ -688,7 +696,7 @@ const InfoModal = ({
       setFormData({
         ...formData,
         mastercode: formData.mastercode || "",
-        trntype: formData.trntype || "1", // Default value for dropdown
+        trntype: formData.trntype || "", // Default value for dropdown
         textwrap: formData.textwrap || "1", // Default value for dropdown
         fontsize: formData.fontsize || "",
         texttype: formData.texttype || "1", // Default value for dropdown
@@ -727,13 +735,13 @@ const InfoModal = ({
       cancelText="Cancel"
     >
       <Form layout="vertical" onSubmit={handleSubmit}>
-        <Form.Item label="Transaction Type">
+        <Form.Item label="Text Type">
           <Select
-            value={formData.trntype}
-            onChange={(value) => setFormData({ ...formData, trntype: value })}
+            value={formData.texttype}
+            onChange={(value) => setFormData({ ...formData, texttype: value })}
           >
-            <Option value="1">Type 1</Option>
-            <Option value="2">Type 2</Option>
+            <Option value="1">Italic </Option>
+            <Option value="2">Bold</Option>
           </Select>
         </Form.Item>
         <Form.Item label="Text Wrap">
@@ -745,10 +753,10 @@ const InfoModal = ({
             <Option value="0">No</Option>
           </Select>
         </Form.Item>
-        <Form.Item label="Text Type">
+        <Form.Item label="Trn Type">
           <Select
-            value={formData.texttype}
-            onChange={(value) => setFormData({ ...formData, texttype: value })}
+            value={formData.trntype}
+            onChange={(value) => setFormData({ ...formData, trntype: value })}
           >
             {/* <Option>Select Fieldtype</Option> */}
             {trntype.map((r) => (
