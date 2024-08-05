@@ -147,27 +147,27 @@ const ModulePage = () => {
   };
   const handleDragStop = (id, d) => {
     console.log("Dragging", id, d);
-  
+
     const updatedModules = modules.map((module) => {
       if (module.id === id) {
         let newX = d.x;
         let newY = d.y;
-  
+
         if (snapToGrid) {
           const gridSize = GRID_SIZE;
           newX = Math.round(newX / gridSize) * gridSize;
           newY = Math.round(newY / gridSize) * gridSize;
         }
-  
+
         const maxX = PAGE_SIZES[pageSize].width * 3.77953 - module.width;
         const maxY = PAGE_SIZES[pageSize].height * 3.77953 - module.height;
-  
+
         newX = Math.max(0, Math.min(newX, maxX));
         newY = Math.max(0, Math.min(newY, maxY));
-  
+
         // Create a copy of the module with updated position
         let updatedModule = { ...module, x: newX, y: newY };
-  
+
         // Find and update previous parent, if any
         const previousParent = modules?.find((m) =>
           m?.children?.some((child) => child.id === id)
@@ -177,7 +177,7 @@ const ModulePage = () => {
             (child) => child.id !== id
           );
         }
-  
+
         // Find the new parent, if any
         const newParent = modules.find(
           (m) =>
@@ -188,7 +188,7 @@ const ModulePage = () => {
             newX + module.width <= m.x + m.width &&
             newY + module.height <= m.y + m.height
         );
-  
+
         if (newParent) {
           updatedModule.parentId = newParent.id;
           // Add the updated module to the new parent's children array
@@ -196,27 +196,27 @@ const ModulePage = () => {
         } else {
           updatedModule.parentId = null;
         }
-  
+
         return updatedModule;
       }
       return module;
     });
-  
+
     // Update the state after modifications
     setModules(updatedModules);
     setActiveModule(id); // Keep the module active after dragging
   };
-  
+
   const handleResizeStop = (id, direction, ref, delta, position) => {
     console.log("Direction", direction, delta, position);
-  
+
     const updatedModules = modules.map((module) => {
       if (module.id === id) {
         let newWidth = parseInt(ref.style.width, 10);
         let newHeight = parseInt(ref.style.height, 10);
         let newX = position.x;
         let newY = position.y;
-  
+
         if (snapToGrid) {
           const gridSize = GRID_SIZE;
           newWidth = Math.round(newWidth / gridSize) * gridSize;
@@ -224,16 +224,16 @@ const ModulePage = () => {
           newX = Math.round(newX / gridSize) * gridSize;
           newY = Math.round(newY / gridSize) * gridSize;
         }
-  
+
         const maxX = PAGE_SIZES[pageSize].width * 3.77953 - newWidth;
         const maxY = PAGE_SIZES[pageSize].height * 3.77953 - newHeight;
-  
+
         newX = Math.max(0, Math.min(newX, maxX));
         newY = Math.max(0, Math.min(newY, maxY));
-  
+
         newWidth = Math.min(newWidth, PAGE_SIZES[pageSize].width * 3.77953);
         newHeight = Math.min(newHeight, PAGE_SIZES[pageSize].height * 3.77953);
-  
+
         // Create a copy of the module with updated dimensions and position
         let updatedModule = {
           ...module,
@@ -242,7 +242,7 @@ const ModulePage = () => {
           x: newX,
           y: newY,
         };
-  
+
         // Find and update previous parent, if any
         const previousParent = modules?.find((m) =>
           m?.children?.some((child) => child.id === id)
@@ -252,7 +252,7 @@ const ModulePage = () => {
             (child) => child.id !== id
           );
         }
-  
+
         // Find the new parent, if any
         const newParent = modules.find(
           (m) =>
@@ -263,7 +263,7 @@ const ModulePage = () => {
             newX + newWidth <= m.x + m.width &&
             newY + newHeight <= m.y + m.height
         );
-  
+
         if (newParent) {
           updatedModule.parentId = newParent.id;
           // Add the updated module to the new parent's children array
@@ -271,17 +271,16 @@ const ModulePage = () => {
         } else {
           updatedModule.parentId = null;
         }
-  
+
         return updatedModule;
       }
       return module;
     });
-  
+
     // Update the state after modifications
     setModules(updatedModules);
     setActiveModule(id); // Keep the module active after resizing
   };
-  
 
   const toggleAlignmentGuide = () => {
     setShowAlignmentGuide(!showAlignmentGuide);
@@ -427,14 +426,7 @@ const ModulePage = () => {
   };
 
   const handleSaveAsFormat = async () => {
-    const payload = modules?.map((it) => {
-      return {
-        ...it,
-        xcoord: it.x,
-        ycoord: it.y,
-        mastercode: mastercode,
-      };
-    });
+    // Prepare payload for addprintformat
     const payload1 = {
       tenant: "test",
       appshortname: "apptest",
@@ -449,24 +441,70 @@ const ModulePage = () => {
       printformattype: 1,
       mastercode: 1,
     };
+
+    // Extract all children from modules
+    const allChildren = modules.flatMap((module) => module.children || []);
+
+    // Prepare payload for addprintfooter (exclude all children)
+    const addPrintFooterPayload = modules
+      .filter((module) => !allChildren.some((child) => child.id === module.id))
+      .map((module) => ({
+        ...module,
+        xcoord: module.x,
+        ycoord: module.y,
+        mastercode: mastercode,
+      }));
+
+    // Prepare payload for addprintfooterchildren
+    const addPrintFooterChildrenPayload = allChildren.map((child) => ({
+      ...child,
+      xcoord: child.x,
+      ycoord: child.y,
+      mastercode: mastercode,
+      parentId: child.parentId, // Include parent ID for reference
+    }));
+
     console.log("Data changes", modules);
+
     try {
-      console.log(payload1);
+      console.log("Payload for addprintformat:", payload1);
       let resp = await axios.post(`${baseUrl}/addprintformat/`, payload1);
-      // Remove a specific item by key
-      sessionStorage.removeItem("modules");
 
       console.log("Format response:", resp.data);
+
+      // After successful format addition, proceed with footer
+      try {
+        console.log("Payload for addprintfooter:", addPrintFooterPayload);
+        let resps2 = await axios.post(
+          `${baseUrl}/addprintfooter/`,
+          addPrintFooterPayload
+        );
+
+        console.log("Footer response:", resps2.data);
+
+        // After successful footer addition, proceed with footer children
+        try {
+          console.log(
+            "Payload for addprintfooterchildren:",
+            addPrintFooterChildrenPayload
+          );
+          let resps3 = await axios.post(
+            `${baseUrl}/addprintfooterchildren/`,
+            addPrintFooterChildrenPayload
+          );
+
+          console.log("Footer children response:", resps3.data);
+
+          // Remove a specific item by key after all operations
+          sessionStorage.removeItem("modules");
+        } catch (err) {
+          console.error("Error adding print footer children:", err);
+        }
+      } catch (err) {
+        console.error("Error adding print footer:", err);
+      }
     } catch (err) {
       console.error("Error adding print format:", err);
-    }
-
-    try {
-      console.log(payload);
-      let resps2 = await axios.post(`${baseUrl}/addprintfooter/`, payload);
-      console.log("Footer response:", resps2.data);
-    } catch (err) {
-      console.error("Error adding print footer:", err);
     }
   };
 
