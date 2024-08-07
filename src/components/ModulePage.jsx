@@ -170,10 +170,10 @@ const ModulePage = () => {
 
         // Find and update previous parent, if any
         const previousParent = modules?.find((m) =>
-          m?.children?.some((child) => child.id === id)
+          m?.childfooter?.some((child) => child.id === id)
         );
         if (previousParent) {
-          previousParent.children = previousParent?.children?.filter(
+          previousParent.childfooter = previousParent?.childfooter?.filter(
             (child) => child.id !== id
           );
         }
@@ -192,7 +192,7 @@ const ModulePage = () => {
         if (newParent) {
           updatedModule.parentId = newParent.id;
           // Add the updated module to the new parent's children array
-          newParent.children = [...(newParent.children || []), updatedModule];
+          newParent.childfooter = [...(newParent.childfooter || []), updatedModule];
         } else {
           updatedModule.parentId = null;
         }
@@ -245,10 +245,10 @@ const ModulePage = () => {
 
         // Find and update previous parent, if any
         const previousParent = modules?.find((m) =>
-          m?.children?.some((child) => child.id === id)
+          m?.childfooter?.some((child) => child.id === id)
         );
         if (previousParent) {
-          previousParent.children = previousParent?.children.filter(
+          previousParent.childfooter = previousParent?.childfooter.filter(
             (child) => child.id !== id
           );
         }
@@ -267,7 +267,7 @@ const ModulePage = () => {
         if (newParent) {
           updatedModule.parentId = newParent.id;
           // Add the updated module to the new parent's children array
-          newParent.children = [...(newParent.children || []), updatedModule];
+          newParent.childfooter = [...(newParent.childfooter || []), updatedModule];
         } else {
           updatedModule.parentId = null;
         }
@@ -405,8 +405,8 @@ const ModulePage = () => {
       }
 
       // If this is a potential parent of the module being updated
-      if (module.children && module.children.length > 0) {
-        const updatedChildren = module.children.map((child) => {
+      if (module.childfooter && module.childfooter.length > 0) {
+        const updatedChildren = module.childfooter.map((child) => {
           // Update the child if it matches the module being updated
           if (child.id === infoFormData.moduleId) {
             return { ...child, ...infoFormData };
@@ -414,7 +414,7 @@ const ModulePage = () => {
           return child;
         });
 
-        return { ...module, children: updatedChildren };
+        return { ...module, childfooter: updatedChildren };
       }
 
       // Return other modules unchanged
@@ -443,7 +443,7 @@ const ModulePage = () => {
     };
 
     // Extract all children from modules
-    const allChildren = modules.flatMap((module) => module.children || []);
+    const allChildren = modules.flatMap((module) => module.childfooter || []);
 
     // Prepare payload for addprintfooter (exclude all children)
     const addPrintFooterPayload = modules
@@ -470,11 +470,11 @@ const ModulePage = () => {
    
       let resp = await axios.post(`${baseUrl}/addprintformat/`, payload1);
 
-      console.log("Format response:", resp.data);
+    
 
       // After successful format addition, proceed with footer
       try {
-        console.log("Payload for addprintfooter:", addPrintFooterPayload);
+       
         let resps2 = await axios.post(
           `${baseUrl}/createprintformatfooter/`,
           addPrintFooterPayload
