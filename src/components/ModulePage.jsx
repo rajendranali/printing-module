@@ -192,7 +192,10 @@ const ModulePage = () => {
         if (newParent) {
           updatedModule.parentId = newParent.id;
           // Add the updated module to the new parent's children array
-          newParent.childfooter = [...(newParent.childfooter || []), updatedModule];
+          newParent.childfooter = [
+            ...(newParent.childfooter || []),
+            updatedModule,
+          ];
         } else {
           updatedModule.parentId = null;
         }
@@ -267,7 +270,10 @@ const ModulePage = () => {
         if (newParent) {
           updatedModule.parentId = newParent.id;
           // Add the updated module to the new parent's children array
-          newParent.childfooter = [...(newParent.childfooter || []), updatedModule];
+          newParent.childfooter = [
+            ...(newParent.childfooter || []),
+            updatedModule,
+          ];
         } else {
           updatedModule.parentId = null;
         }
@@ -454,32 +460,16 @@ const ModulePage = () => {
         ycoord: module.y,
         mastercode: mastercode,
       }));
-
-    // Prepare payload for addprintfooterchildren
-    // const addPrintFooterChildrenPayload = allChildren.map((child) => ({
-    //   ...child,
-    //   xcoord: child.x,
-    //   ycoord: child.y,
-    //   mastercode: mastercode,
-    //   parentId: child.parentId, // Include parent ID for reference
-    // }));
-
-
-
+console.log("addPrintFooterPayload",addPrintFooterPayload,module)
     try {
-   
       let resp = await axios.post(`${baseUrl}/addprintformat/`, payload1);
-
-    
 
       // After successful format addition, proceed with footer
       try {
-       
         let resps2 = await axios.post(
           `${baseUrl}/createprintformatfooter/`,
           addPrintFooterPayload
         );
-
       } catch (err) {
         console.error("Error adding print footer:", err);
       }
