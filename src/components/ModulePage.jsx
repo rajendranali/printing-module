@@ -456,18 +456,18 @@ const ModulePage = () => {
       }));
 
     // Prepare payload for addprintfooterchildren
-    const addPrintFooterChildrenPayload = allChildren.map((child) => ({
-      ...child,
-      xcoord: child.x,
-      ycoord: child.y,
-      mastercode: mastercode,
-      parentId: child.parentId, // Include parent ID for reference
-    }));
+    // const addPrintFooterChildrenPayload = allChildren.map((child) => ({
+    //   ...child,
+    //   xcoord: child.x,
+    //   ycoord: child.y,
+    //   mastercode: mastercode,
+    //   parentId: child.parentId, // Include parent ID for reference
+    // }));
 
-    console.log("Data changes", modules);
+
 
     try {
-      console.log("Payload for addprintformat:", payload1);
+   
       let resp = await axios.post(`${baseUrl}/addprintformat/`, payload1);
 
       console.log("Format response:", resp.data);
@@ -476,30 +476,10 @@ const ModulePage = () => {
       try {
         console.log("Payload for addprintfooter:", addPrintFooterPayload);
         let resps2 = await axios.post(
-          `${baseUrl}/addprintfooter/`,
+          `${baseUrl}/createprintformatfooter/`,
           addPrintFooterPayload
         );
 
-        console.log("Footer response:", resps2.data);
-
-        // After successful footer addition, proceed with footer children
-        try {
-          console.log(
-            "Payload for addprintfooterchildren:",
-            addPrintFooterChildrenPayload
-          );
-          let resps3 = await axios.post(
-            `${baseUrl}/addprintfooterchildren/`,
-            addPrintFooterChildrenPayload
-          );
-
-          console.log("Footer children response:", resps3.data);
-
-          // Remove a specific item by key after all operations
-          sessionStorage.removeItem("modules");
-        } catch (err) {
-          console.error("Error adding print footer children:", err);
-        }
       } catch (err) {
         console.error("Error adding print footer:", err);
       }
@@ -749,7 +729,7 @@ const InfoModal = ({
         pagetype: formData.pagetype || 1,
         height: formData.height || "",
         width: formData.width || "",
-        apikey: formData.apikey || "1", // Default value for input
+        apikey: formData.apikey || "", // Default value for input
         // Add more fields as needed
         title: "",
         caption: "",
