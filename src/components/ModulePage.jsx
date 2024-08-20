@@ -126,6 +126,7 @@ const ModulePage = () => {
       y: 50,
       width: 200,
       height: 150,
+      childfooter:[]
     };
     setModules([...modules, newModule]);
     setNextId((nextId) => nextId + 1);
@@ -145,7 +146,7 @@ const ModulePage = () => {
     setModules(formattedModules);
     setActiveModule(null);
   };
-  const handleDragStop = (id, d) => {
+const handleDragStop = (id, d) => {
     console.log("Dragging", id, d);
 
     const updatedModules = modules.map((module) => {
@@ -194,7 +195,7 @@ const ModulePage = () => {
           // Add the updated module to the new parent's children array
           newParent.childfooter = [
             ...(newParent.childfooter || []),
-            updatedModule,
+            { ...updatedModule, wanttotal: "" }, // Add wanttotal attribute here
           ];
         } else {
           updatedModule.parentId = null;
@@ -208,9 +209,10 @@ const ModulePage = () => {
     // Update the state after modifications
     setModules(updatedModules);
     setActiveModule(id); // Keep the module active after dragging
-  };
+};
 
-  const handleResizeStop = (id, direction, ref, delta, position) => {
+
+const handleResizeStop = (id, direction, ref, delta, position) => {
     console.log("Direction", direction, delta, position);
 
     const updatedModules = modules.map((module) => {
@@ -272,7 +274,7 @@ const ModulePage = () => {
           // Add the updated module to the new parent's children array
           newParent.childfooter = [
             ...(newParent.childfooter || []),
-            updatedModule,
+            { ...updatedModule, wanttotal: "" }, // Add wanttotal attribute here
           ];
         } else {
           updatedModule.parentId = null;
@@ -286,7 +288,8 @@ const ModulePage = () => {
     // Update the state after modifications
     setModules(updatedModules);
     setActiveModule(id); // Keep the module active after resizing
-  };
+};
+
 
   const toggleAlignmentGuide = () => {
     setShowAlignmentGuide(!showAlignmentGuide);
@@ -459,6 +462,7 @@ const ModulePage = () => {
         xcoord: module.x,
         ycoord: module.y,
         mastercode: mastercode,
+       
       }));
 console.log("addPrintFooterPayload",addPrintFooterPayload,module)
     try {
